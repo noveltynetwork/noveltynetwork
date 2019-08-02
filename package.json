@@ -1,0 +1,22 @@
+{
+  "name": "papercoin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^2.3.0"
+  },
+  "devDependencies": {},
+  "license": "MIT",
+  "scripts": {
+    "migrate": "truffle migrate",
+    "test": "truffle test"
+  },
+  "engines": {
+    "node": ">= 8.11.4",
+    "npm": ">= 5.6.0"
+  }
+}
