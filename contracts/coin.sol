@@ -16,6 +16,21 @@ contract ERC721 is ERC165, IERC721 {
     using Address for address;
     using Counters for Counters.Counter;
 
+    /*** DATA TYPES ***/
+
+    struct Vote {
+        uint256 multiplier;
+        uint256 baseValue;
+    }
+
+    /*** STORAGE ***/
+
+    /// @dev An array containing the Vote struct for all Votes in existence. The ID
+    ///  of each vote which is unique is actually an index into this array.
+    Vote[] votes;
+
+    Counters.Counter private _voteIds;
+
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
@@ -31,6 +46,8 @@ contract ERC721 is ERC165, IERC721 {
 
     // Mapping from owner to operator approvals
     mapping (address => mapping (address => bool)) private _operatorApprovals;
+
+    /*** CONSTANTS ***/
 
     /*
      *     bytes4(keccak256('balanceOf(address)')) == 0x70a08231
@@ -261,6 +278,11 @@ contract ERC721 is ERC165, IERC721 {
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
 
+        Votes[tokenId] = Vote({
+            multiplier: 1,
+            baseValue: 1
+        })
+
         emit Transfer(address(0), to, tokenId);
     }
 
@@ -308,6 +330,13 @@ contract ERC721 is ERC165, IERC721 {
         _ownedTokensCount[to].increment();
 
         _tokenOwner[tokenId] = to;
+
+        Vote vote = votes[tokenId];
+        // TODO:
+        // if address is of a non-paper publisher address
+        vote.multiplier = 0;
+        // else
+        vote.multiplier = vote.multiplier * 2;
 
         emit Transfer(from, to, tokenId);
     }
