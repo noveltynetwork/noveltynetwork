@@ -27,11 +27,15 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         uint256 baseValue;
     }
 
+    event Voted(address indexed voter, string _paperHash);
+    
+    event NewTokenCreated(address indexed owner, uint256 tokenId);
+
     /*** STORAGE ***/
 
     /// @dev An array containing the Vote struct for all Votes in existence. The ID
     ///  of each vote which is unique is actually an index into this array.
-    Vote[] votes;
+    mapping(uint256 => Vote) votes;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
@@ -160,7 +164,7 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
      */
     function transferFrom(address from, address to, uint256 tokenId) public {
         //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: transfer caller is not owner nor approved");
+        require(_isApprovedOrOwner(from, tokenId), "ERC721: transfer caller is not owner nor approved");
 
         _transferFrom(from, to, tokenId);
     }
@@ -180,6 +184,26 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         safeTransferFrom(from, to, tokenId, "");
     }
 
+    /**Add vote 
+    */
+    function addVote(string memory _contentHash, uint256 tokenId) public {
+        Vote memory vote = votes[tokenId];
+        
+        address author = publisher.getAuthor(_contentHash);
+    
+        // if address is of a non-paper publisher address
+        if (publisher.hasPublishedPapers(msg.sender)) {
+            vote.multiplier = vote.multiplier * 2;
+        } else {
+            vote.multiplier = 0;
+        }
+
+        safeTransferFrom(msg.sender, author, tokenId);
+
+        emit Voted(msg.sender, _contentHash);
+    }
+
+    
     /**
      * @dev Safely transfers the ownership of a given token ID to another address
      * If the target address is a contract, it must implement {IERC721Receiver-onERC721Received},
@@ -232,8 +256,12 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
      * is an operator of the owner, or is the owner of the token
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
+        // emit TokenTransferStarted(spender, spender, spender, tokenId, _tokenOwner[tokenId]);
         require(_exists(tokenId), "ERC721: operator query for nonexistent token");
         address owner = ownerOf(tokenId);
+        
+        
+        
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
     }
 
@@ -266,12 +294,17 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         _mint(to, tokenId);
         require(_checkOnERC721Received(address(0), to, tokenId, _data), "ERC721: transfer to non ERC721Receiver implementer");
     }
+    
+    function createNewToken(address to, uint256 tokenId) public {
+        _mint(to, tokenId);
+        
+    }
 
     /**
      * @dev Internal function to mint a new token.
      * Reverts if the given token ID already exists.
      * @param to The address that will own the minted token
-     * @param tokenId uint256 ID of the token to be minted
+     * @param tokenId uint256 ID of the token to be mcted
      */
     function _mint(address to, uint256 tokenId) internal {
         require(to != address(0), "ERC721: mint to the zero address");
@@ -284,8 +317,10 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
             multiplier: 1,
             baseValue: 1
         });
-
+        
+        emit NewTokenCreated(_tokenOwner[tokenId], tokenId);
         emit Transfer(address(0), to, tokenId);
+    
     }
 
     /**
@@ -315,6 +350,7 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         _burn(ownerOf(tokenId), tokenId);
     }
 
+
     /**
      * @dev Internal function to transfer ownership of a given token ID to another address.
      * As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
@@ -327,21 +363,11 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         require(to != address(0), "ERC721: transfer to the zero address");
 
         _clearApproval(tokenId);
-
         _ownedTokensCount[from].decrement();
         _ownedTokensCount[to].increment();
 
         _tokenOwner[tokenId] = to;
-
-        Vote memory vote = votes[tokenId];
-
-        // if address is of a non-paper publisher address
-        if (publisher.hasPublishedPapers(msg.sender)) {
-            vote.multiplier = vote.multiplier * 2;
-        } else {
-            vote.multiplier = 0;
-        }
-
+        
         emit Transfer(from, to, tokenId);
     }
 
@@ -380,6 +406,19 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
     function getVoteWeights(uint256 _tokenId) public view returns (uint256){
         Vote memory vote = votes[_tokenId];
         return vote.baseValue * vote.multiplier;
+    }
+
+    /// @notice Returns all the relevant information about a specific token
+    /// @param _tokenId The ID of the token of interest
+    function getToken(uint256 _tokenId)
+      external
+      view
+      returns (
+        uint256 baseValue_,
+        uint256 multiplier_
+    ) {
+        baseValue_ = votes[_tokenId].baseValue;
+        multiplier_ = votes[_tokenId].multiplier;
     }
 
     function setPublisher(address _contractAddress) public onlyOwner {

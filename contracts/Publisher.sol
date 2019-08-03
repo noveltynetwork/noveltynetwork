@@ -9,7 +9,7 @@ contract Publisher is Ownable {
     using Counters for Counters.Counter;
 
     /*** Events ***/
-    event PaperPublished(address indexed author, uint256 contentHash);
+    event PaperPublished(address indexed author, uint256 tokenId, string contentHash);
 
     /*** DATA TYPES ***/
 
@@ -27,13 +27,21 @@ contract Publisher is Ownable {
 
     mapping(address => bool) userHasPublished;
     mapping(string => Paper) papers;
-
-    function Publish(string memory _contentHash) public {
+    
+    function getPaper(string memory _contentHash) public view returns (address author, string memory contentHash, uint256 voteWeight){
+        Paper memory p = papers[_contentHash];
+        return  (p.author, p.contentHash, p.votesInWeight);
+    }
+    
+    function publish(string memory _contentHash) public {
         _tokenIds.increment();
+        
         uint256 newTokenId = _tokenIds.current();
-        require(voteCoin.mint(msg.sender, newTokenId));
-        uint8 newVoteWeight = 1 * 1; // basevalue * weight
 
+        //voteCoin._safeMint(msg.sender, newTokenId);
+        voteCoin.createNewToken(msg.sender, newTokenId);
+
+        uint8 newVoteWeight = 1 * 1; // basevalue * weight
         userHasPublished[msg.sender] = true;
 
         papers[_contentHash] = Paper({
@@ -43,22 +51,7 @@ contract Publisher is Ownable {
         });
 
         papers[_contentHash].hasVoted[msg.sender][newTokenId] = true;
-        emit PaperPublished(msg.sender, newTokenId);
-    }
-
-    function addVote(string memory _contentHash, uint256 tokenId) public {
-        // Make sure the same token is not used twice on the same paper.
-        require(papers[_contentHash].hasVoted[msg.sender][tokenId] == false);
-
-        uint256 weight = voteCoin.getVoteWeights(tokenId);
-        papers[_contentHash].votesInWeight += weight; 
-
-        voteCoin.safeTransferFrom(address(this),
-                                  papers[_contentHash].author,
-                                  tokenId);
-    }
-
-    function addVotes(string memory _contentHash, uint256 weight) internal {
+        emit PaperPublished(msg.sender, newTokenId, _contentHash);
     }
 
     function getAuthor(string memory _contentHash) public view returns (address) {
