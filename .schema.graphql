@@ -1,0 +1,5 @@
+type Paper @entity {
+    author: Address!
+    contentHash: string!
+    votesInWeight: integer
+}
