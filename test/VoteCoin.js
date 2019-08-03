@@ -1,3 +1,5 @@
+const assertRevert = require('./support/assert-revert');
+
 const VoteCoin = artifacts.require("VoteCoin");
 const Publisher = artifacts.require("Publisher");
 const colors = require('colors');
@@ -17,9 +19,6 @@ contract("Publisher", async accounts => {
   beforeEach(async function () {
     publisherContract = await Publisher.deployed();
     voteCoinContract = await VoteCoin.deployed();
-
-    console.log(owner);
-    console.log(otherUser);
   })
 
   describe('Mint Token', () => {
@@ -55,5 +54,30 @@ contract("Publisher", async accounts => {
         console.log(e);
       }
     })
+
+    it('should emit the bought event', async () => {
+      var transaction = await publisherContract.publish("randow3", { from: otherUser })
+
+      // PaperPublished event
+      assert.equal(transaction.logs.length, 1)
+      assert.equal(transaction.logs[0].event, 'PaperPublished')
+      assert.equal(transaction.logs[0].args.tokenId.toString(), THIRD_TOKEN_ID.toString())
+    })
+
+    it('should fail to mint new tokens when called by non-minter', async () => {
+      assertRevert(voteCoinContract.mint(owner, FIRST_TOKEN_ID.toString(),
+          { from: otherUser}))
+    })
   })
+
+  describe('getToken', () => {
+    it('should return the baseValue and multiplier of the token', async () => {
+      var transaction = await publisherContract.publish("randow3", { from: otherUser })
+      let res = await voteCoinContract.getToken(FIRST_TOKEN_ID)
+
+      assert.equal(res.baseValue_.toNumber(), 1)
+      assert.equal(res.multiplier_, 1)
+    })
+  })
+
 });
