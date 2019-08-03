@@ -21,8 +21,8 @@ contract Publisher is Ownable {
         address author;
         string contentHash;
         uint256 votesInWeight;
-        // Track if a token has already voted on a paper.
-        mapping(uint256 => bool) hasVoted;
+        // Track if a token from a address has already voted on the paper.
+        mapping(address => mapping(uint256 => bool)) hasVoted;
     }
 
     mapping(address => bool) userHasPublished;
@@ -42,12 +42,12 @@ contract Publisher is Ownable {
             votesInWeight: newVoteWeight
         });
 
-        papers[_contentHash].hasVoted[newTokenId] = true;
+        papers[_contentHash].hasVoted[msg.sender][newTokenId] = true;
     }
 
     function addVote(string memory _contentHash, uint256 tokenId) public {
         // Make sure the same token is not used twice on the same paper.
-        require(papers[_contentHash].hasVoted[tokenId] == false);
+        require(papers[_contentHash].hasVoted[msg.sender][tokenId] == false);
 
         uint256 weight = voteCoin.getVoteWeights(tokenId);
         papers[_contentHash].votesInWeight += weight; 
