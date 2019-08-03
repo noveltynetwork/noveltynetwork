@@ -294,17 +294,12 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         _mint(to, tokenId);
         require(_checkOnERC721Received(address(0), to, tokenId, _data), "ERC721: transfer to non ERC721Receiver implementer");
     }
-    
-    function createNewToken(address to, uint256 tokenId) public {
-        _mint(to, tokenId);
-        
-    }
 
     /**
      * @dev Internal function to mint a new token.
      * Reverts if the given token ID already exists.
      * @param to The address that will own the minted token
-     * @param tokenId uint256 ID of the token to be mcted
+     * @param tokenId uint256 ID of the token to be minted
      */
     function _mint(address to, uint256 tokenId) internal {
         require(to != address(0), "ERC721: mint to the zero address");

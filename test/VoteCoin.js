@@ -18,10 +18,6 @@ contract("Publisher", async accounts => {
     publisherContract = await Publisher.deployed();
     voteCoinContract = await VoteCoin.deployed();
 
-    // await voteCoinContract.setPublisher(publisherContract.address);
-    // await voteCoinContract.addMinter(publisherContract.address);
-    // await publisherContract.setVoteCoin(voteCoinContract.address);
-
     console.log(owner);
     console.log(otherUser);
   })
@@ -50,7 +46,7 @@ contract("Publisher", async accounts => {
         let rePublishResponse = await publisherContract.publish("randow2", { from: otherUser })
 
         console.log("PUBLISH RESPONSE".yellow);
-        console.log(publishResponse.logs);
+        console.log(rePublishResponse.logs);
 
         tokens = await voteCoinContract.balanceOf(otherUser)
         assert.equal(tokens.length, 2)

@@ -38,8 +38,10 @@ contract Publisher is Ownable {
         
         uint256 newTokenId = _tokenIds.current();
 
-        //voteCoin._safeMint(msg.sender, newTokenId);
-        voteCoin.createNewToken(msg.sender, newTokenId);
+        // Only this contract (Publisher) can mint tokens
+        // by calling VoteCoin.addMinter() with the contracts
+        // address from the owner address.
+        voteCoin.mint(msg.sender, newTokenId);
 
         uint8 newVoteWeight = 1 * 1; // basevalue * weight
         userHasPublished[msg.sender] = true;
