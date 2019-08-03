@@ -2,21 +2,25 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721Mintable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
+
+import "./Publisher.sol";
 
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract ERC721 is ERC165, IERC721 {
+contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
     using SafeMath for uint256;
     using Address for address;
-    using Counters for Counters.Counter;
 
     /*** DATA TYPES ***/
+
+    Publisher public publisher;
 
     struct Vote {
         uint256 multiplier;
@@ -28,8 +32,6 @@ contract ERC721 is ERC165, IERC721 {
     /// @dev An array containing the Vote struct for all Votes in existence. The ID
     ///  of each vote which is unique is actually an index into this array.
     Vote[] votes;
-
-    Counters.Counter private _voteIds;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
@@ -332,11 +334,13 @@ contract ERC721 is ERC165, IERC721 {
         _tokenOwner[tokenId] = to;
 
         Vote memory vote = votes[tokenId];
-        // TODO:
+
         // if address is of a non-paper publisher address
-        vote.multiplier = 0;
-        // else
-        vote.multiplier = vote.multiplier * 2;
+        if (publisher.hasPublishedPapers(msg.sender)) {
+            vote.multiplier = vote.multiplier * 2;
+        } else {
+            vote.multiplier = 0;
+        }
 
         emit Transfer(from, to, tokenId);
     }
@@ -376,5 +380,9 @@ contract ERC721 is ERC165, IERC721 {
     function getVoteWeights(uint256 _tokenId) public view returns (uint256){
         Vote memory vote = votes[_tokenId];
         return vote.baseValue * vote.multiplier;
+    }
+
+    function setPublisher(address _contractAddress) public onlyOwner {
+        publisher = Publisher(_contractAddress);
     }
 }

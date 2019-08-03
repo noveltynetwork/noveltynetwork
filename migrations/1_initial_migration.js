@@ -1,6 +1,6 @@
 const Migrations = artifacts.require("Migrations");
 const Publisher = artifacts.require("Publisher");
-const VoteCoin = artifacts.require("ERC721");
+const VoteCoin = artifacts.require("VoteCoin");
 
 module.exports = function(deployer) {
   deployer.deploy(Migrations);
@@ -18,6 +18,8 @@ module.exports = function(deployer) {
       publisherContract = instance;
         // Set the instance of VoteCoin's address on Publisher
         // via Publisher's setVoteCoin() function.
+      voteCoinContract.setPublisher(publisherContract.address);
+      voteCoinContract.addMinter(publisherContract.address);
       return publisherContract.setVoteCoin(voteCoinContract.address);
     });
 };
