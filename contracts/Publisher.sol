@@ -9,7 +9,7 @@ contract Publisher is Ownable {
     using Counters for Counters.Counter;
 
     /*** Events ***/
-    event PaperPublished();
+    event PaperPublished(address indexed author, uint256 contentHash);
 
     /*** DATA TYPES ***/
 
@@ -43,6 +43,7 @@ contract Publisher is Ownable {
         });
 
         papers[_contentHash].hasVoted[msg.sender][newTokenId] = true;
+        emit PaperPublished(msg.sender, newTokenId);
     }
 
     function addVote(string memory _contentHash, uint256 tokenId) public {
