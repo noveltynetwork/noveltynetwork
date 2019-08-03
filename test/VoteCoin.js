@@ -1,11 +1,11 @@
 const assertRevert = require('./support/assert-revert');
 
-const VoteCoin = artifacts.require("VoteCoin");
+const NoveltyCoin = artifacts.require("NoveltyCoin");
 const Publisher = artifacts.require("Publisher");
 const colors = require('colors');
 
 contract("Publisher", async accounts => {
-  let voteCoinContract, publisherContract;
+  let noveltyCoinContract, publisherContract;
 
   const owner = accounts[0]
   const otherUser = accounts[1]
@@ -18,13 +18,13 @@ contract("Publisher", async accounts => {
 
   beforeEach(async function () {
     publisherContract = await Publisher.deployed();
-    voteCoinContract = await VoteCoin.deployed();
+    noveltyCoinContract = await NoveltyCoin.deployed();
   })
 
   describe('Mint Token', () => {
 
     it('should return 0 when no tokens', async () => {
-      assert.equal((await voteCoinContract.balanceOf(otherUser)).length, 1)
+      assert.equal((await noveltyCoinContract.balanceOf(otherUser)).length, 1)
     })
 
     it('should count tokens properly', async () => {
@@ -37,9 +37,8 @@ contract("Publisher", async accounts => {
         console.log(publishResponse.logs);
 
         console.log("getting token");
-        // console.log("token: ", await voteCoinContract.getToken(1));
 
-        let tokens = await voteCoinContract.balanceOf(otherUser)
+        let tokens = await noveltyCoinContract.balanceOf(otherUser)
         assert.equal(tokens.length, 1)
 
         let rePublishResponse = await publisherContract.publish("randow2", { from: otherUser })
@@ -47,7 +46,7 @@ contract("Publisher", async accounts => {
         console.log("PUBLISH RESPONSE".yellow);
         console.log(rePublishResponse.logs);
 
-        tokens = await voteCoinContract.balanceOf(otherUser)
+        tokens = await noveltyCoinContract.balanceOf(otherUser)
         assert.equal(tokens.length, 2)
       } catch(e) {
         console.log("ERROR".red);
@@ -65,7 +64,7 @@ contract("Publisher", async accounts => {
     })
 
     it('should fail to mint new tokens when called by non-minter', async () => {
-      assertRevert(voteCoinContract.mint(owner, FIRST_TOKEN_ID.toString(),
+      assertRevert(noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(),
           { from: otherUser}))
     })
   })
@@ -73,7 +72,7 @@ contract("Publisher", async accounts => {
   describe('getToken', () => {
     it('should return the baseValue and multiplier of the token', async () => {
       var transaction = await publisherContract.publish("randow3", { from: otherUser })
-      let res = await voteCoinContract.getToken(FIRST_TOKEN_ID)
+      let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID)
 
       assert.equal(res.baseValue_.toNumber(), 1)
       assert.equal(res.multiplier_, 1)

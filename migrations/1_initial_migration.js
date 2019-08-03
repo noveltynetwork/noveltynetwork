@@ -1,25 +1,25 @@
 const Migrations = artifacts.require("Migrations");
 const Publisher = artifacts.require("Publisher");
-const VoteCoin = artifacts.require("VoteCoin");
+const NoveltyCoin = artifacts.require("NoveltyCoin");
 
 module.exports = function(deployer) {
   deployer.deploy(Migrations);
 
-  let voteCoinContract, publisherContract;
+  let noveltyCoinContract, publisherContract;
 
-  // Deploy the VoteCoin ERC721 token
-  deployer.deploy(VoteCoin)
+  // Deploy the NoveltyCoin ERC721 token
+  deployer.deploy(NoveltyCoin)
     .then(function(instance) {
-      voteCoinContract = instance;
+      noveltyCoinContract = instance;
       // Get the deployed instance of Publisher
       return deployer.deploy(Publisher);
     })
     .then(function(instance) {
       publisherContract = instance;
-        // Set the instance of VoteCoin's address on Publisher
-        // via Publisher's setVoteCoin() function.
-      voteCoinContract.setPublisher(publisherContract.address);
-      voteCoinContract.addMinter(publisherContract.address);
-      return publisherContract.setVoteCoin(voteCoinContract.address);
+        // Set the instance of NoveltyCoin's address on Publisher
+        // via Publisher's setNoveltyCoin() function.
+      noveltyCoinContract.setPublisher(publisherContract.address);
+      noveltyCoinContract.addMinter(publisherContract.address);
+      return publisherContract.setNoveltyCoin(noveltyCoinContract.address);
     });
 };

@@ -14,7 +14,7 @@ import "./Publisher.sol";
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
+contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
     using SafeMath for uint256;
     using Address for address;
 

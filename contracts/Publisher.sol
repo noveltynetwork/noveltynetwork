@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import "@openzeppelin/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 
-import "./VoteCoin.sol";
+import "./NoveltyCoin.sol";
 
 contract Publisher is Ownable {
     using Counters for Counters.Counter;
@@ -15,7 +15,7 @@ contract Publisher is Ownable {
 
     Counters.Counter private _tokenIds;
 
-    VoteCoin public voteCoin;
+    NoveltyCoin public noveltyCoin;
 
     struct Paper {
         address author;
@@ -39,9 +39,9 @@ contract Publisher is Ownable {
         uint256 newTokenId = _tokenIds.current();
 
         // Only this contract (Publisher) can mint tokens
-        // by calling VoteCoin.addMinter() with the contracts
+        // by calling NoveltyCoin.addMinter() with the contracts
         // address from the owner address.
-        voteCoin.mint(msg.sender, newTokenId);
+        noveltyCoin.mint(msg.sender, newTokenId);
 
         uint8 newVoteWeight = 1 * 1; // basevalue * weight
         userHasPublished[msg.sender] = true;
@@ -64,8 +64,8 @@ contract Publisher is Ownable {
         return userHasPublished[user];
     }
 
-    function setVoteCoin(address _contractAddress) public onlyOwner {
-        voteCoin = VoteCoin(_contractAddress);
+    function setNoveltyCoin(address _contractAddress) public onlyOwner {
+        noveltyCoin = NoveltyCoin(_contractAddress);
     }
 }
 
