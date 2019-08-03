@@ -6,12 +6,15 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts/introspection/ERC165.sol";
+import "@openzeppelin/contracts/ownership/Ownable.sol";
+
+import "./Publisher.sol";
 
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract ERC721 is ERC165, IERC721 {
+contract ERC721 is ERC165, IERC721, Ownable {
     using SafeMath for uint256;
     using Address for address;
     using Counters for Counters.Counter;
@@ -22,6 +25,8 @@ contract ERC721 is ERC165, IERC721 {
         uint256 multiplier;
         uint256 baseValue;
     }
+
+    Publisher public publisher;
 
     /*** STORAGE ***/
 
@@ -278,10 +283,10 @@ contract ERC721 is ERC165, IERC721 {
         _tokenOwner[tokenId] = to;
         _ownedTokensCount[to].increment();
 
-        Votes[tokenId] = Vote({
+        votes[tokenId] = Vote({
             multiplier: 1,
             baseValue: 1
-        })
+        });
 
         emit Transfer(address(0), to, tokenId);
     }
@@ -331,7 +336,7 @@ contract ERC721 is ERC165, IERC721 {
 
         _tokenOwner[tokenId] = to;
 
-        Vote vote = votes[tokenId];
+        Vote memory vote = votes[tokenId];
         // TODO:
         // if address is of a non-paper publisher address
         vote.multiplier = 0;
@@ -371,5 +376,21 @@ contract ERC721 is ERC165, IERC721 {
         if (_tokenApprovals[tokenId] != address(0)) {
             _tokenApprovals[tokenId] = address(0);
         }
+    }
+
+    function addVote(string memory _contentHash, uint256 tokenId) public {
+        publisher.addVotes(_contentHash, getVoteWeights(tokenId));
+        address author = publisher.getAuthor(_contentHash);
+
+        safeTransferFrom(this, address(this), author, tokenId);
+    }
+
+    function getVoteWeights(string memory _tokenId) public  returns (uint256){
+        Vote memory vote = votes[_tokenId];
+        return vote.baseValue * vote.multiplier;
+    }
+
+    function setPublisher(address _contractAddress) public onlyOwner {
+        publisher = Publisher(_contractAddress);
     }
 }
