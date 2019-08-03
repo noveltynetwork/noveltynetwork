@@ -1,10 +1,13 @@
 pragma solidity ^0.5.0;
+
+import "@openzeppelin/contracts/ownership/Ownable.sol";
+
 import "./ERC721.sol";
 
-contract Publisher{
-    address owner;
-
+contract Publisher is Ownable{
     uint256 totalBalance;
+
+    ERC721 public voteCoin;
 
     struct Paper {
         address author;
@@ -14,13 +17,7 @@ contract Publisher{
 
     mapping(string => Paper) papers;
 
-    constructor() public {
-        owner = msg.sender;
-    }
-
     function Publish(string memory _contentHash) public {
-        address author = msg.sender;
-
         //Vote vote = _mint();
 
         papers[_contentHash] = Paper({
@@ -30,12 +27,24 @@ contract Publisher{
         });
     }
 
-    function addVotes(string memory _contentHash, uint256 weight) internal {
-        papers[_contentHash].votesInWeight += weight;
+    function addVote(string memory _contentHash, uint256 tokenId) public {
+        uint256 weight = voteCoin.getVoteWeights(tokenId);
+        papers[_contentHash].votesInWeight += weight; 
+
+        voteCoin.safeTransferFrom(address(this),
+                                  papers[_contentHash].author,
+                                  tokenId);
     }
 
-    function getAuthor(string memory _contentHash) public returns (address) {
+    function addVotes(string memory _contentHash, uint256 weight) internal {
+    }
+
+    function getAuthor(string memory _contentHash) public view returns (address) {
         return papers[_contentHash].author;
+    }
+
+    function setVoteCoin(address _contractAddress) public onlyOwner {
+        voteCoin = ERC721(_contractAddress);
     }
 }
 
