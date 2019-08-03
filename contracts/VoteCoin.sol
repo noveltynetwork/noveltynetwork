@@ -31,7 +31,7 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
 
     /// @dev An array containing the Vote struct for all Votes in existence. The ID
     ///  of each vote which is unique is actually an index into this array.
-    Vote[] votes;
+    mapping(uint256 => Vote) votes;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
@@ -380,6 +380,19 @@ contract VoteCoin is ERC165, IERC721, ERC721Mintable, Ownable {
     function getVoteWeights(uint256 _tokenId) public view returns (uint256){
         Vote memory vote = votes[_tokenId];
         return vote.baseValue * vote.multiplier;
+    }
+
+    /// @notice Returns all the relevant information about a specific token
+    /// @param _tokenId The ID of the token of interest
+    function getToken(uint256 _tokenId)
+      external
+      view
+      returns (
+        uint256 baseValue_,
+        uint256 multiplier_
+    ) {
+        baseValue_ = votes[_tokenId].baseValue;
+        multiplier_ = votes[_tokenId].multiplier;
     }
 
     function setPublisher(address _contractAddress) public onlyOwner {

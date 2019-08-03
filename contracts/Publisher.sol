@@ -28,12 +28,14 @@ contract Publisher is Ownable {
     mapping(address => bool) userHasPublished;
     mapping(string => Paper) papers;
 
-    function Publish(string memory _contentHash) public {
+    function publish(string memory _contentHash) public {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
-        require(voteCoin.mint(msg.sender, newTokenId));
-        uint8 newVoteWeight = 1 * 1; // basevalue * weight
 
+        //voteCoin._safeMint(msg.sender, newTokenId);
+        require(voteCoin.mint(msg.sender, newTokenId));
+
+        uint8 newVoteWeight = 1 * 1; // basevalue * weight
         userHasPublished[msg.sender] = true;
 
         papers[_contentHash] = Paper({
