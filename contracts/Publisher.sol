@@ -10,7 +10,7 @@ contract Publisher is Ownable {
 
     /*** Events ***/
     event PaperPublished(address indexed author, uint256 tokenId, string name, string description, string contentHash);
-    event Voted(address indexed voter, string _paperHash);
+    event Voted(address indexed voter, string _paperHash, uint256 votesInWeight);
 
     /*** DATA TYPES ***/
 
@@ -73,7 +73,7 @@ contract Publisher is Ownable {
                                   papers[_contentHash].author,
                                   tokenId);
 
-        emit Voted(msg.sender, _contentHash);
+        emit Voted(msg.sender, _contentHash, papers[_contentHash].votesInWeight);
     }
 
     function getAuthor(string memory _contentHash) public view returns (address) {
