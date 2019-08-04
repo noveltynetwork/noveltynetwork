@@ -9,7 +9,7 @@ contract Publisher is Ownable {
     using Counters for Counters.Counter;
 
     /*** Events ***/
-    event PaperPublished(address indexed author, uint256 tokenId, string contentHash);
+    event PaperPublished(address indexed author, uint256 tokenId, string name, string description, string contentHash);
     event Voted(address indexed voter, string _paperHash);
 
     /*** DATA TYPES ***/
@@ -19,6 +19,8 @@ contract Publisher is Ownable {
     NoveltyCoin public noveltyCoin;
 
     struct Paper {
+        string name;
+        string description;
         address author;
         string contentHash;
         uint256 votesInWeight;
@@ -28,13 +30,14 @@ contract Publisher is Ownable {
 
     mapping(address => bool) userHasPublished;
     mapping(string => Paper) papers;
-    
-    function getPaper(string memory _contentHash) public view returns (address author, string memory contentHash, uint256 voteWeight){
+
+    function getPaper(string memory _contentHash) public view returns
+    (address author, string memory name, string memory description, string memory contentHash, uint256 voteWeight){
         Paper memory p = papers[_contentHash];
-        return  (p.author, p.contentHash, p.votesInWeight);
+        return  (p.author, p.name, p.description, p.contentHash, p.votesInWeight);
     }
     
-    function publish(string memory _contentHash) public {
+    function publish(string memory _name, string memory _description, string memory _contentHash) public {
         _tokenIds.increment();
         
         uint256 newTokenId = _tokenIds.current();
@@ -48,18 +51,20 @@ contract Publisher is Ownable {
         userHasPublished[msg.sender] = true;
 
         papers[_contentHash] = Paper({
+            name: _name,
+            description: _description,
             author: msg.sender,
             contentHash: _contentHash,
             votesInWeight: newVoteWeight
         });
 
         papers[_contentHash].hasVoted[msg.sender][newTokenId] = true;
-        emit PaperPublished(msg.sender, newTokenId, _contentHash);
+        emit PaperPublished(msg.sender, newTokenId, _name, _description, _contentHash);
     }
 
     function addVote(string memory _contentHash, uint256 tokenId) public {
         // Make sure the same token is not used twice on the same paper.
-        require(papers[_contentHash].hasVoted[msg.sender][tokenId] == false);
+        require(papers[_contentHash].hasVoted[msg.sender][tokenId] == false, "same token used more than once");
 
         uint256 weight = noveltyCoin.getVoteWeights(tokenId);
         papers[_contentHash].votesInWeight += weight;

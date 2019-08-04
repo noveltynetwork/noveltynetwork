@@ -31,7 +31,7 @@ contract("NoveltyCoin", async accounts => {
 
       try {
 
-        let publishResponse = await publisherContract.publish("randomhas1sdf", { from: otherUser });
+        let publishResponse = await publisherContract.publish("paper1", "global warming", "randomhas1sdf", { from: otherUser });
 
         console.log("PUBLISH RESPONSE".yellow);
         console.log(publishResponse.logs);
@@ -41,21 +41,21 @@ contract("NoveltyCoin", async accounts => {
         let tokens = await noveltyCoinContract.balanceOf(otherUser)
         assert.equal(tokens.length, 1)
 
-        let rePublishResponse = await publisherContract.publish("randow2", { from: otherUser })
+        let rePublishResponse = await publisherContract.publish("paper2", "global warning", "randow2", { from: otherUser })
 
         console.log("PUBLISH RESPONSE".yellow);
         console.log(rePublishResponse.logs);
 
         tokens = await noveltyCoinContract.balanceOf(otherUser)
         assert.equal(tokens.length, 2)
-      } catch(e) {
+      } catch (e) {
         console.log("ERROR".red);
         console.log(e);
       }
     })
 
     it('should emit the bought event', async () => {
-      var transaction = await publisherContract.publish("randow3", { from: otherUser })
+      var transaction = await publisherContract.publish("Paper3", "global warping", "randow3", { from: otherUser })
 
       // PaperPublished event
       assert.equal(transaction.logs.length, 1)
@@ -65,13 +65,13 @@ contract("NoveltyCoin", async accounts => {
 
     it('should fail to mint new tokens when called by non-minter', async () => {
       assertRevert(noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(),
-          { from: otherUser}))
+        { from: otherUser }))
     })
   })
 
   describe('getToken', () => {
     it('should return the baseValue and multiplier of the token', async () => {
-      var transaction = await publisherContract.publish("randow3", { from: otherUser })
+      var transaction = await publisherContract.publish("paper4", "global wanting", "randow3", { from: otherUser })
       let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID)
 
       assert.equal(res.baseValue_.toNumber(), 1)
