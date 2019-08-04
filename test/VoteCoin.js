@@ -4,7 +4,7 @@ const NoveltyCoin = artifacts.require("NoveltyCoin");
 const Publisher = artifacts.require("Publisher");
 const colors = require('colors');
 
-contract("Publisher", async accounts => {
+contract("NoveltyCoin", async accounts => {
   let noveltyCoinContract, publisherContract;
 
   const owner = accounts[0]

@@ -27,10 +27,6 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         uint256 baseValue;
     }
 
-    event Voted(address indexed voter, string _paperHash);
-    
-    event NewTokenCreated(address indexed owner, uint256 tokenId);
-
     /*** STORAGE ***/
 
     /// @dev An array containing the Vote struct for all Votes in existence. The ID
@@ -183,26 +179,6 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
     function safeTransferFrom(address from, address to, uint256 tokenId) public {
         safeTransferFrom(from, to, tokenId, "");
     }
-
-    /**Add vote 
-    */
-    function addVote(string memory _contentHash, uint256 tokenId) public {
-        Vote memory vote = votes[tokenId];
-        
-        address author = publisher.getAuthor(_contentHash);
-    
-        // if address is of a non-paper publisher address
-        if (publisher.hasPublishedPapers(msg.sender)) {
-            vote.multiplier = vote.multiplier * 2;
-        } else {
-            vote.multiplier = 0;
-        }
-
-        safeTransferFrom(msg.sender, author, tokenId);
-
-        emit Voted(msg.sender, _contentHash);
-    }
-
     
     /**
      * @dev Safely transfers the ownership of a given token ID to another address
@@ -313,9 +289,7 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
             baseValue: 1
         });
         
-        emit NewTokenCreated(_tokenOwner[tokenId], tokenId);
         emit Transfer(address(0), to, tokenId);
-    
     }
 
     /**
@@ -362,6 +336,15 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         _ownedTokensCount[to].increment();
 
         _tokenOwner[tokenId] = to;
+
+        Vote storage vote = votes[tokenId];
+            
+        // if address is of a non-paper publisher address
+        if (publisher.hasPublishedPapers(msg.sender)) {
+            vote.multiplier = vote.multiplier * 2;
+        } else {
+            vote.multiplier = 1;
+        }
         
         emit Transfer(from, to, tokenId);
     }

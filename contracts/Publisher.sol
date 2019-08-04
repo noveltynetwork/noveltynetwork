@@ -10,6 +10,7 @@ contract Publisher is Ownable {
 
     /*** Events ***/
     event PaperPublished(address indexed author, uint256 tokenId, string contentHash);
+    event Voted(address indexed voter, string _paperHash);
 
     /*** DATA TYPES ***/
 
@@ -54,6 +55,20 @@ contract Publisher is Ownable {
 
         papers[_contentHash].hasVoted[msg.sender][newTokenId] = true;
         emit PaperPublished(msg.sender, newTokenId, _contentHash);
+    }
+
+    function addVote(string memory _contentHash, uint256 tokenId) public {
+        // Make sure the same token is not used twice on the same paper.
+        require(papers[_contentHash].hasVoted[msg.sender][tokenId] == false);
+
+        uint256 weight = noveltyCoin.getVoteWeights(tokenId);
+        papers[_contentHash].votesInWeight += weight;
+
+        noveltyCoin.safeTransferFrom(msg.sender,
+                                  papers[_contentHash].author,
+                                  tokenId);
+
+        emit Voted(msg.sender, _contentHash);
     }
 
     function getAuthor(string memory _contentHash) public view returns (address) {
