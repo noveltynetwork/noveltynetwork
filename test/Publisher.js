@@ -25,10 +25,12 @@ contract("Publisher", async accounts => {
   describe('Vote', () => {
 
     it('Can vote on a Paper', async () => {
-      const tx = await publisherContract.publish("randowhas2", { from: otherUser })
-      await publisherContract.publish("randow3", { from: someOtherUser })
+      const tx = await publisherContract
+          .publish("testpaper", "for testing", "randowhas2", { from: otherUser })
+      await publisherContract
+          .publish("testpaper2", "for testing", "randow3", { from: someOtherUser })
+
       const tokenId = tx.logs[0].args.tokenId;
-      console.log(tokenId);
 
       await noveltyCoinContract.approve(publisherContract.address, tokenId, { from: otherUser});
       const transaction = await publisherContract.addVote("randow3", tokenId, { from: otherUser});
