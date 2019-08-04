@@ -1,5 +1,7 @@
 ## Novelty Network
 
+http://novelty.network
+
 Novelty network solidity contracts and subgraph node setup configs
 
 ### Contribute
