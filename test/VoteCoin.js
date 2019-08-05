@@ -1,82 +1,107 @@
-const assertRevert = require('./support/assert-revert');
+const assertRevert = require("./support/assert-revert");
 
 const NoveltyCoin = artifacts.require("NoveltyCoin");
 const Publisher = artifacts.require("Publisher");
-const colors = require('colors');
+const colors = require("colors");
 
 contract("NoveltyCoin", async accounts => {
-  let noveltyCoinContract, publisherContract;
+    let noveltyCoinContract, publisherContract;
 
-  const owner = accounts[0]
-  const otherUser = accounts[1]
+    const owner = accounts[0];
+    const otherUser = accounts[1];
 
-  const FIRST_TOKEN_ID = 1
-  const SECOND_TOKEN_ID = 2
-  const THIRD_TOKEN_ID = 3
+    const FIRST_TOKEN_ID = 1;
+    const SECOND_TOKEN_ID = 2;
+    const THIRD_TOKEN_ID = 3;
 
-  const TOKEN_TYPE = 2
+    const TOKEN_TYPE = 2;
 
-  beforeEach(async function () {
-    publisherContract = await Publisher.deployed();
-    noveltyCoinContract = await NoveltyCoin.deployed();
-  })
+    beforeEach(async function() {
+        publisherContract = await Publisher.deployed();
+        noveltyCoinContract = await NoveltyCoin.deployed();
+    });
 
-  describe('Mint Token', () => {
+    describe("Mint Token", () => {
+        it("should return 0 when no tokens", async () => {
+            assert.equal(
+                (await noveltyCoinContract.balanceOf(otherUser)).length,
+                1
+            );
+        });
 
-    it('should return 0 when no tokens', async () => {
-      assert.equal((await noveltyCoinContract.balanceOf(otherUser)).length, 1)
-    })
+        it("should count tokens properly", async () => {
+            try {
+                let publishResponse = await publisherContract.publish(
+                    "paper1",
+                    "global warming",
+                    "randomhas1sdf",
+                    { from: otherUser }
+                );
 
-    it('should count tokens properly', async () => {
+                console.log("PUBLISH RESPONSE".yellow);
+                console.log(publishResponse.logs);
 
-      try {
+                console.log("getting token");
 
-        let publishResponse = await publisherContract.publish("paper1", "global warming", "randomhas1sdf", { from: otherUser });
+                let tokens = await noveltyCoinContract.balanceOf(otherUser);
+                assert.equal(tokens.length, 1);
 
-        console.log("PUBLISH RESPONSE".yellow);
-        console.log(publishResponse.logs);
+                let rePublishResponse = await publisherContract.publish(
+                    "paper2",
+                    "global warning",
+                    "randow2",
+                    { from: otherUser }
+                );
 
-        console.log("getting token");
+                console.log("PUBLISH RESPONSE".yellow);
+                console.log(rePublishResponse.logs);
 
-        let tokens = await noveltyCoinContract.balanceOf(otherUser)
-        assert.equal(tokens.length, 1)
+                tokens = await noveltyCoinContract.balanceOf(otherUser);
+                assert.equal(tokens.length, 2);
+            } catch (e) {
+                console.log("ERROR".red);
+                console.log(e);
+            }
+        });
 
-        let rePublishResponse = await publisherContract.publish("paper2", "global warning", "randow2", { from: otherUser })
+        it("should emit the bought event", async () => {
+            const transaction = await publisherContract.publish(
+                "Paper3",
+                "global warping",
+                "randow3",
+                { from: otherUser }
+            );
 
-        console.log("PUBLISH RESPONSE".yellow);
-        console.log(rePublishResponse.logs);
+            // PaperPublished event
+            assert.equal(transaction.logs.length, 1);
+            assert.equal(transaction.logs[0].event, "PaperPublished");
+            assert.equal(
+                transaction.logs[0].args.tokenId.toString(),
+                THIRD_TOKEN_ID.toString()
+            );
+        });
 
-        tokens = await noveltyCoinContract.balanceOf(otherUser)
-        assert.equal(tokens.length, 2)
-      } catch (e) {
-        console.log("ERROR".red);
-        console.log(e);
-      }
-    })
+        it("should fail to mint new tokens when called by non-minter", async () => {
+            assertRevert(
+                noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(), {
+                    from: otherUser
+                })
+            );
+        });
+    });
 
-    it('should emit the bought event', async () => {
-      var transaction = await publisherContract.publish("Paper3", "global warping", "randow3", { from: otherUser })
+    describe("getToken", () => {
+        it("should return the baseValue and multiplier of the token", async () => {
+            const transaction = await publisherContract.publish(
+                "paper4",
+                "global wanting",
+                "randow3",
+                { from: otherUser }
+            );
+            let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID);
 
-      // PaperPublished event
-      assert.equal(transaction.logs.length, 1)
-      assert.equal(transaction.logs[0].event, 'PaperPublished')
-      assert.equal(transaction.logs[0].args.tokenId.toString(), THIRD_TOKEN_ID.toString())
-    })
-
-    it('should fail to mint new tokens when called by non-minter', async () => {
-      assertRevert(noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(),
-        { from: otherUser }))
-    })
-  })
-
-  describe('getToken', () => {
-    it('should return the baseValue and multiplier of the token', async () => {
-      var transaction = await publisherContract.publish("paper4", "global wanting", "randow3", { from: otherUser })
-      let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID)
-
-      assert.equal(res.baseValue_.toNumber(), 1)
-      assert.equal(res.multiplier_, 1)
-    })
-  })
-
+            assert.equal(res.baseValue_.toNumber(), 1);
+            assert.equal(res.multiplier_, 1);
+        });
+    });
 });
