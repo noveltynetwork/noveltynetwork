@@ -107,7 +107,8 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         address owner = ownerOf(tokenId);
         require(to != owner, "ERC721: approval to current owner");
 
-        require(msg.sender == owner || isApprovedForAll(owner, msg.sender),
+        require(
+            msg.sender == owner || isApprovedForAll(owner, msg.sender),
             "ERC721: approve caller is not owner nor approved for all"
         );
 
@@ -179,7 +180,7 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
     function safeTransferFrom(address from, address to, uint256 tokenId) public {
         safeTransferFrom(from, to, tokenId, "");
     }
-    
+
     /**
      * @dev Safely transfers the ownership of a given token ID to another address
      * If the target address is a contract, it must implement {IERC721Receiver-onERC721Received},
@@ -235,9 +236,9 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         // emit TokenTransferStarted(spender, spender, spender, tokenId, _tokenOwner[tokenId]);
         require(_exists(tokenId), "ERC721: operator query for nonexistent token");
         address owner = ownerOf(tokenId);
-        
-        
-        
+
+
+
         return (spender == owner || getApproved(tokenId) == spender || isApprovedForAll(owner, spender));
     }
 
@@ -288,7 +289,7 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
             multiplier: 1,
             baseValue: 1
         });
-        
+
         emit Transfer(address(0), to, tokenId);
     }
 
@@ -338,14 +339,14 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         _tokenOwner[tokenId] = to;
 
         Vote storage vote = votes[tokenId];
-            
+
         // if address is of a non-paper publisher address
         if (publisher.hasPublishedPapers(msg.sender)) {
             vote.multiplier = vote.multiplier * 2;
         } else {
             vote.multiplier = 1;
         }
-        
+
         emit Transfer(from, to, tokenId);
     }
 

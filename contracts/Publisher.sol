@@ -36,10 +36,10 @@ contract Publisher is Ownable {
         Paper memory p = papers[_contentHash];
         return  (p.author, p.name, p.description, p.votesInWeight);
     }
-    
+
     function publish(string memory _name, string memory _description, string memory _contentHash) public {
         _tokenIds.increment();
-        
+
         uint256 newTokenId = _tokenIds.current();
 
         // Only this contract (Publisher) can mint tokens
@@ -69,9 +69,11 @@ contract Publisher is Ownable {
         uint256 weight = noveltyCoin.getVoteWeights(tokenId);
         papers[_contentHash].votesInWeight += weight;
 
-        noveltyCoin.safeTransferFrom(msg.sender,
-                                  papers[_contentHash].author,
-                                  tokenId);
+        noveltyCoin.safeTransferFrom(
+            msg.sender,
+            papers[_contentHash].author,
+            tokenId
+        );
 
         emit Voted(msg.sender, _contentHash, papers[_contentHash].votesInWeight);
     }
