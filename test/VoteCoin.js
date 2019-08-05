@@ -87,6 +87,11 @@ contract("NoveltyCoin", async accounts => {
                     from: otherUser
                 })
             );
+            assertRevert(
+                noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(), {
+                    from: owner
+                })
+            );
         });
     });
 
