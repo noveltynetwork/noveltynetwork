@@ -23,48 +23,32 @@ contract("NoveltyCoin", async accounts => {
 
     describe("Mint Token", () => {
         it("should return 0 when no tokens", async () => {
-            assert.equal(
-                (await noveltyCoinContract.balanceOf(otherUser)).length,
-                1
-            );
+            assert.equal(await noveltyCoinContract.balanceOf(otherUser), 0);
         });
 
         it("should count tokens properly", async () => {
-            try {
-                let publishResponse = await publisherContract.publish(
-                    "paper1",
-                    "global warming",
-                    "randomhas1sdf",
-                    { from: otherUser }
-                );
+            await publisherContract.publish(
+                "paper1",
+                "global warming",
+                "randomhas1sdf",
+                { from: otherUser }
+            );
 
-                console.log("PUBLISH RESPONSE".yellow);
-                console.log(publishResponse.logs);
+            let tokens = await noveltyCoinContract.balanceOf(otherUser);
+            assert.equal(tokens, 1);
 
-                console.log("getting token");
+            await publisherContract.publish(
+                "paper2",
+                "global warning",
+                "randow2",
+                { from: otherUser }
+            );
 
-                let tokens = await noveltyCoinContract.balanceOf(otherUser);
-                assert.equal(tokens.length, 1);
-
-                let rePublishResponse = await publisherContract.publish(
-                    "paper2",
-                    "global warning",
-                    "randow2",
-                    { from: otherUser }
-                );
-
-                console.log("PUBLISH RESPONSE".yellow);
-                console.log(rePublishResponse.logs);
-
-                tokens = await noveltyCoinContract.balanceOf(otherUser);
-                assert.equal(tokens.length, 2);
-            } catch (e) {
-                console.log("ERROR".red);
-                console.log(e);
-            }
+            tokens = await noveltyCoinContract.balanceOf(otherUser);
+            assert.equal(tokens, 2);
         });
 
-        it("should emit the bought event", async () => {
+        it("should emit the PaperPublished event", async () => {
             const transaction = await publisherContract.publish(
                 "Paper3",
                 "global warping",
@@ -82,11 +66,6 @@ contract("NoveltyCoin", async accounts => {
         });
 
         it("should fail to mint new tokens when called by non-minter", async () => {
-            assertRevert(
-                noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(), {
-                    from: otherUser
-                })
-            );
             assertRevert(
                 noveltyCoinContract.mint(owner, FIRST_TOKEN_ID.toString(), {
                     from: owner

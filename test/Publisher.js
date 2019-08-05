@@ -51,7 +51,6 @@ contract("Publisher", async accounts => {
             );
 
             let res = await noveltyCoinContract.getToken(tokenId);
-            console.log(res);
         });
     });
 });
