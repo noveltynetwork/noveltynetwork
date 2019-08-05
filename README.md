@@ -36,3 +36,9 @@ To run tests:
 ```
 truffle test
 ```
+
+To test on a specific network specify the network to truffle with `--network` flag.
+For example:
+```
+truffle test --network ropsten
+```
