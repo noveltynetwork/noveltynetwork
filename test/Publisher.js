@@ -50,7 +50,6 @@ contract("Publisher", async accounts => {
             );
 
             let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID.toString());
-            console.log(res);
         });
 
         it("should not allow a address to vote a token twice on a paper", async () => {
@@ -80,7 +79,30 @@ contract("Publisher", async accounts => {
             );
 
             let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID.toString());
-            console.log(res);
+        });
+
+        it("Token weight increases on voting on another paper", async () => {
+            let weight = await noveltyCoinContract.getToken(SECOND_TOKEN_ID.toString());
+            await noveltyCoinContract.approve(
+                publisherContract.address,
+                SECOND_TOKEN_ID.toString(),
+                { from: USER_2 }
+            );
+            await publisherContract.addVote(
+                USER_1_PAPER,
+                SECOND_TOKEN_ID.toString(),
+                { from: USER_2 }
+            );
+
+            let newWeight = await noveltyCoinContract.getToken(SECOND_TOKEN_ID.toString());
+            assert.equal(
+                newWeight.multiplier_.toNumber() - weight.multiplier_.toNumber(),
+                1
+            );
+        });
+
+        it("Token weight resets on sending to a non-author", async () => {
+
         });
 
     });
