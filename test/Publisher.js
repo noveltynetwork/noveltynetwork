@@ -8,14 +8,15 @@ contract("Publisher", async accounts => {
     let noveltyCoinContract, publisherContract;
 
     const owner = accounts[0];
-    const otherUser = accounts[1];
-    const someOtherUser = accounts[2];
+
+    const USER_1 = accounts[1];
+    const USER_1_PAPER = "paper1";
+    const USER_2 = accounts[2];
+    const USER_2_PAPER = "paper2";
 
     const FIRST_TOKEN_ID = 1;
     const SECOND_TOKEN_ID = 2;
     const THIRD_TOKEN_ID = 3;
-
-    const TOKEN_TYPE = 2;
 
     beforeEach(async function() {
         publisherContract = await Publisher.deployed();
@@ -27,30 +28,60 @@ contract("Publisher", async accounts => {
             const tx = await publisherContract.publish(
                 "testpaper",
                 "for testing",
-                "randowhas2",
-                { from: otherUser }
+                USER_1_PAPER,
+                { from: USER_1 }
             );
             await publisherContract.publish(
                 "testpaper2",
                 "for testing",
-                "randow3",
-                { from: someOtherUser }
+                USER_2_PAPER,
+                { from: USER_2 }
             );
-
-            const tokenId = tx.logs[0].args.tokenId;
 
             await noveltyCoinContract.approve(
                 publisherContract.address,
-                tokenId,
-                { from: otherUser }
+                FIRST_TOKEN_ID.toString(),
+                { from: USER_1 }
             );
-            const transaction = await publisherContract.addVote(
-                "randow3",
-                tokenId,
-                { from: otherUser }
+            await publisherContract.addVote(
+                USER_2_PAPER,
+                FIRST_TOKEN_ID.toString(),
+                { from: USER_1 }
             );
 
-            let res = await noveltyCoinContract.getToken(tokenId);
+            let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID.toString());
+            console.log(res);
         });
+
+        it("should not allow a address to vote a token twice on a paper", async () => {
+            // From the above test USER_2 already has the token
+            await noveltyCoinContract.approve(
+                publisherContract.address,
+                FIRST_TOKEN_ID.toString(),
+                { from: USER_2 }
+            );
+            await publisherContract.addVote(
+                USER_1_PAPER,
+                FIRST_TOKEN_ID.toString(),
+                { from: USER_2 }
+            );
+
+            await noveltyCoinContract.approve(
+                publisherContract.address,
+                FIRST_TOKEN_ID.toString(),
+                { from: USER_1 }
+            );
+            assertRevert(
+                publisherContract.addVote(
+                    USER_2_PAPER,
+                    FIRST_TOKEN_ID.toString(),
+                    { from: USER_1 }
+                )
+            );
+
+            let res = await noveltyCoinContract.getToken(FIRST_TOKEN_ID.toString());
+            console.log(res);
+        });
+
     });
 });

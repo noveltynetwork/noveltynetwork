@@ -58,16 +58,21 @@ contract Publisher is Ownable {
             votesInWeight: newVoteWeight
         });
 
+        // Mark the newly minted token as voted
         papers[_contentHash].hasVoted[msg.sender][newTokenId] = true;
         emit PaperPublished(msg.sender, newTokenId, _name, _description, _contentHash);
     }
 
     function addVote(string memory _contentHash, uint256 tokenId) public {
-        // Make sure the same token is not used twice on the same paper.
-        require(papers[_contentHash].hasVoted[msg.sender][tokenId] == false, "same token used more than once");
+        // Make sure the same token is not used twice on the same paper by a address.
+        require(
+            papers[_contentHash].hasVoted[msg.sender][tokenId] == false,
+            "NVT: same token used twice to vote on a paper"
+        );
 
         uint256 weight = noveltyCoin.getVoteWeights(tokenId);
         papers[_contentHash].votesInWeight += weight;
+        papers[_contentHash].hasVoted[msg.sender][tokenId] = true;
 
         noveltyCoin.safeTransferFrom(
             msg.sender,
