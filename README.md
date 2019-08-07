@@ -5,8 +5,27 @@ http://novelty.network
 Novelty network solidity contracts and subgraph node setup configs
 
 
+### Introduction
+Novelty network aims to provide an open access, decentralized paper publishing
+platform with an in-built reputation system where every vote is weighted based on the
+voters paper publishing history and increases when used to vote between two authors.
+The reputation accrued by a paper from votes can also be passed on forward or backwards
+to reward the work of other authors and peer reviewers.
+
+Every vote's weight represented by an NFT is reset if the token is transferred
+outside the network i.e. to a non-author entity thus disincentivizing selling tokens
+as a value losing action.
+
+### Background
+With the current state of global academic journals publishing a research paper is heavily centralized
+with only three major academics journal publishers (Elsevier, Springer, Wiley)
+having a monopoly on deciding and publishing papers in their periodic journals
+and over 72% scientific publications locked up behind a paywall.
+We aim to provide a different incentive model for academics and scientists
+that rewards them by both building up their reputation as well as getting capital investments.
+
 ### Open Research Areas
-There are still a few things we have to figure out before something like can
+There are still a few things we have to figure out before something like this can
 takeoff:
 
  * Prevent/limit Sybil Attacks: Currently there's nothing preventing anyone from
@@ -17,7 +36,7 @@ takeoff:
 
 ### Contribute
 
-To contribute make setup you have your dev environment setup correctly.
+To contribute make sure you have your dev environment setup correctly.
 
 Install all dependencies
 ```
