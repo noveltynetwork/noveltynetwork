@@ -341,9 +341,15 @@ contract NoveltyCoin is ERC165, IERC721, ERC721Mintable, Ownable {
         Vote storage vote = votes[tokenId];
 
         // Increase the vote weight of a token on every vote within the network
-        if (publisher.hasPublishedPapers(from)) {
+        if (publisher.hasPublishedPapers(from) && msg.sender == address(publisher)) {
             vote.multiplier *= 2;
-        } else {
+        }
+        // Token transferred between authors
+        else if (publisher.hasPublishedPapers(from)) {
+            // do nothing
+        }
+        // Token transferred to a non-author
+        else {
             vote.multiplier = 1;
         }
 

@@ -105,5 +105,8 @@ contract("Publisher", async accounts => {
 
         });
 
+        it("Token weight stays same on sending to a author", async () => {
+
+        });
     });
 });
